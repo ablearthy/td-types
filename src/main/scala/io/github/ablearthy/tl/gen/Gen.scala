@@ -46,7 +46,7 @@ case class Gen(private val definitions: Vector[Definition]) {
         definition.constructorName.ident
       )
     )
-    // TODO: type params (from definition)
+
     val typeParams = getTypeParams(definition.resultType)
     val realTypeParameters = typeParams.map(x => tparam"$x")
     val params = definition.args.zipWithIndex.flatMap { case (u, i) => generateParam(u, i) }.toList
