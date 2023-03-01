@@ -133,6 +133,61 @@ case class Gen(private val definitions: Vector[Definition]) {
     }
     case HashTypeIdent => Type.Name("Int")
   }
+
+  def generateCodecsForProduct(definition: Definition): (Defn, Defn) = {
+    val rawName = GenUtils.showConstructorName(
+      namespace = definition.constructorName.namespace,
+      name = definition.constructorName.ident
+    )
+    val name = ctorToType(rawName)
+    val realName = name(0).toLower + name.substring(1)
+
+    val encoderAsObject = t"Encoder.AsObject[${Type.Name(name)}]"
+    val decoderT = t"Decoder[${Type.Name(name)}]"
+    val someName = Lit.String(rawName(0).toLower + rawName.substring(1))
+    val r = Pat.Var(Term.Name(realName + "Encoder"))
+    val r1 = Pat.Var(Term.Name(realName + "Decoder"))
+    val qEncoder =
+      q"lazy implicit val $r: $encoderAsObject = TDJsonEncoder.deriveProductEncoder($someName, deriveEncoder)"
+    val qDecoder =
+      q"lazy implicit val $r1: $decoderT = TDJsonDecoder.deriveProductDecoder($someName, deriveDecoder)"
+    (qEncoder, qDecoder)
+  }
+
+  def generateDecoderForSum(base: String, definitions: Vector[Definition]): Defn = {
+    val decoderName = Pat.Var(Term.Name({ base(0).toLower + base.substring(1) } + "Decoder"))
+    val decoderT = t"Decoder[${Type.Name(base)}]"
+    val defs = definitions.map { definition =>
+      val rawName = GenUtils.showConstructorName(
+        namespace = definition.constructorName.namespace,
+        name = definition.constructorName.ident
+      )
+      val name = ctorToType(rawName)
+      val realName = name(0).toLower + name.substring(1)
+      val x = Term.Name(realName + "Decoder")
+      q"$x.widen"
+    }.toList
+
+    q"lazy implicit val $decoderName: $decoderT = List[$decoderT](..$defs).reduceLeft(_ or _)"
+  }
+  def generateEncoderForSum(base: String, definitions: Vector[Definition]): Defn = {
+    val encoderName = Pat.Var(Term.Name({
+      base(0).toLower + base.substring(1)
+    } + "Encoder"))
+    val encoderT = t"Encoder.AsObject[${Type.Name(base)}]"
+    val defs = definitions.map { definition =>
+      val rawName = GenUtils.showConstructorName(
+        namespace = definition.constructorName.namespace,
+        name = definition.constructorName.ident
+      )
+      val name = ctorToType(rawName)
+      val realName = name(0).toLower + name.substring(1)
+      val x = Term.Name(realName + "Encoder")
+      p"case a: ${Type.Name(name)} => $x.encodeObject(a)"
+    }.toList
+    q"lazy implicit val $encoderName: $encoderT = Encoder.AsObject.instance { ..case $defs }"
+  }
+
 }
 
 object Gen {
