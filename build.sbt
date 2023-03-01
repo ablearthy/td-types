@@ -5,5 +5,6 @@ ThisBuild / scalaVersion := "2.13.10"
 lazy val root = (project in file("."))
   .settings(
     name := "td-tl-parser",
-    libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.3.3"
+    libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.3.3",
+    libraryDependencies += "org.scalameta" %% "scalameta" % "4.7.5"
   )
