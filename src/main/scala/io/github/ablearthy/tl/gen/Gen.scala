@@ -1,5 +1,5 @@
 package io.github.ablearthy.tl.gen
-
+import fastparse.{Parsed, parse}
 import io.github.ablearthy.tl.parser.{Term => PTerm, _}
 
 import scala.meta._
@@ -49,7 +49,11 @@ case class Gen(private val definitions: Vector[Definition]) {
 
     val typeParams = getTypeParams(definition.resultType)
     val realTypeParameters = typeParams.map(x => tparam"$x")
-    val params = definition.args.zipWithIndex.flatMap { case (u, i) => generateParam(u, i) }.toList
+    val comments = parse(definition.comments.mkString("\n"), CommentParser.parser(_)) match {
+      case Parsed.Success(value, index) => Vector.from(value)
+      case _                            => Vector.empty
+    }
+    val params = definition.args.zipWithIndex.flatMap { case (u, i) => generateParam(u, i, comments) }.toList
     val name = Type.Name(scalaTypeName)
 
     maybeExtends match {
@@ -72,33 +76,55 @@ case class Gen(private val definitions: Vector[Definition]) {
     theTrait :: definitions.map(d => generateSingleton(d, Some(name))).toList
   }
 
-  def generateParam(arg: Args, index: Int): List[Term.Param] = arg match {
-    case CondArg(ident, cond, _, typeTerm) => {
-      val name = meta.Name(ident.getOrElse(s"anon__$index"))
-      val scalaType = transformPTerm(typeTerm)
-      if (cond.isDefined) {
-        List(param"$name: Option[$scalaType]")
-      } else {
-        List(param"$name: $scalaType")
-      }
-    }
-    case ArrayArg(ident, multiplicity, args) => {
-      val rest = Type.Tuple(args.map { case AnonymousArg(_, term) => transformPTerm(term) }.toList)
-      val name = meta.Name(ident.getOrElse(s"anon__$index"))
-      List(param"$name: Vector[$rest]")
-    }
-    case BracketArg(idents, exclMark, typeTerm) => {
-      val tpe = transformPTerm(typeTerm)
-      val paramNames = idents.zipWithIndex.map { case (a, internalIndex) =>
-        meta.Name(a.getOrElse(s"anon__${index}__$internalIndex"))
-      }
-      paramNames.map { name => param"$name: $tpe" }.toList
-    }
-    case AnonymousArg(exclMark, typeTerm) => {
-      val name = meta.Name(s"anon__$index")
-      List(param"$name: ${transformPTerm(typeTerm)}")
+  def shouldBeNullable(comments: Vector[(String, String)], lit: String): Boolean = {
+    val r =
+      comments.find { case (u, _) => u == lit }.map { case (_, v) => v.contains("may be null") }
+    r match {
+      case Some(value) => value
+      case None        => false
     }
   }
+
+  def generateParam(arg: Args, index: Int, comments: Vector[(String, String)]): List[Term.Param] =
+    arg match {
+      case CondArg(ident, cond, _, typeTerm) => {
+        val lit = ident.getOrElse(s"anon__$index")
+        val name = meta.Name(lit)
+        val scalaType = transformPTerm(typeTerm)
+        if (cond.isDefined || shouldBeNullable(comments, lit)) {
+          List(param"$name: Option[$scalaType]")
+        } else {
+          List(param"$name: $scalaType")
+        }
+      }
+      case ArrayArg(ident, multiplicity, args) => {
+        val rest = Type.Tuple(args.map { case AnonymousArg(_, term) =>
+          transformPTerm(term)
+        }.toList)
+        val name = meta.Name(ident.getOrElse(s"anon__$index"))
+        List(param"$name: Vector[$rest]")
+      }
+      case BracketArg(idents, exclMark, typeTerm) => {
+        val tpe = transformPTerm(typeTerm)
+        idents.zipWithIndex
+          .map { case (a, internalIndex) =>
+            val lit = a.getOrElse(s"anon__${index}__$internalIndex")
+            (meta.Name(lit), shouldBeNullable(comments, lit))
+          }
+          .map { case (name, maybeNullable) =>
+            if (maybeNullable) {
+              param"$name: Option[$tpe]"
+            } else {
+              param"$name: $tpe"
+            }
+          }
+          .toList
+      }
+      case AnonymousArg(exclMark, typeTerm) => {
+        val name = meta.Name(s"anon__$index")
+        List(param"$name: ${transformPTerm(typeTerm)}")
+      }
+    }
 
   def getTypeParams(resultType: ResultType): List[Type.Name] = {
     resultType.terms.map { case SimpleTerm(_, SimpleTypeIdent(IdentWithNs(_, n))) =>
