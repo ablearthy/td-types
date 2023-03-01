@@ -1,8 +1,11 @@
 import fastparse.{Parsed, parse}
-import io.github.ablearthy.tl.parser.schemaParser
-import io.github.ablearthy.tl.parser.CondArg
+import io.circe._
+import io.circe.syntax._
 import io.github.ablearthy.tl.gen.Gen
+import io.github.ablearthy.tl.parser.schemaParser
+import shapeless.{Coproduct, Generic}
 
+import java.io._
 import scala.meta._
 
 object Main {
@@ -17,14 +20,34 @@ object Main {
     result match {
       case Parsed.Success(r, _) => {
         val gen = Gen(r.types)
-        val defs = gen.types
-          .map { case (k, v) =>
-            if (v.length == 1) { List(gen.generateSingleton(v(0))) }
-            else { gen.generateSum(k, v) }
+        val defs = gen.types.flatMap { case (k, v) =>
+          if (v.length == 1) {
+            List(gen.generateSingleton(v(0)))
+          } else {
+            gen.generateSum(k, v)
           }
-          .flatten
+        }.toList
+
+        val implicits = gen.types.flatMap { case (k, v) =>
+          v.flatMap { d =>
+            val t = gen.generateCodecsForProduct(d)
+            List(t._1, t._2)
+          }
+        }.toList
+
+        val sumImplicits = gen.types
+          .filter { case (_, v) => v.length > 1 }
+          .flatMap { case (k, v) =>
+            List(gen.generateEncoderForSum(k, v), gen.generateDecoderForSum(k, v))
+          }
           .toList
-        println(source"..$defs")
+
+        val implicitsQ = q"object TDJsonImplicits { ..$implicits; ..$sumImplicits }"
+
+        val source = source"..$defs; $implicitsQ"
+        val writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("test.txt")))
+        writer.write(source.toString)
+        writer.close
       }
 
       case failure: Parsed.Failure => println(s"Failure: $failure")
