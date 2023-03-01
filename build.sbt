@@ -12,6 +12,8 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core",
       "io.circe" %% "circe-generic",
-      "io.circe" %% "circe-parser"
+      "io.circe" %% "circe-parser",
+      "io.circe" %% "circe-shapes",
+      "io.circe" %% "circe-generic-extras"
     ).map(_ % circeVersion)
   )
