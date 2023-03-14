@@ -1,0 +1,1 @@
+addSbtPlugin("io.github.ablearthy" % "td-tl-generator" % "0.1.0-SNAPSHOT")
