@@ -1,4 +1,5 @@
 import _root_.io.github.ablearthy.tl.GeneratorPlugin
+import scala.math.Ordering.Implicits._
 
 lazy val scala212 = "2.12.17"
 lazy val scala213 = "2.13.10"
@@ -51,5 +52,11 @@ lazy val root = (project in file("."))
       val tlFile = file(".") / "tl" / "td_api_1_8_10.tl"
       val path = (Compile / sourceManaged).value / "io" / "github" / "ablearthy" / "tl"
       GeneratorPlugin.generateTypes(tlFile, path)
-    }.taskValue
+    }.taskValue,
+    Compile / scalacOptions ++= {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((3, n)) => List("-Xmax-inlines:100000")
+        case _            => Nil
+      }
+    }
   )
