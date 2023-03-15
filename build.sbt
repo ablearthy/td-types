@@ -1,6 +1,6 @@
 import _root_.io.github.ablearthy.tl.GeneratorPlugin
 
-ThisBuild / version := "1.0.0"
+ThisBuild / version := "1.8.10"
 
 ThisBuild / scalaVersion := "2.13.10"
 
