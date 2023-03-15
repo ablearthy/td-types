@@ -41,6 +41,7 @@ lazy val root = (project in file("."))
     name := "td-types",
     scalaVersion := scala213,
     crossScalaVersions := supportedScalaVersions,
+    versionScheme := Some("semver-spec"),
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core",
       "io.circe" %% "circe-generic",
