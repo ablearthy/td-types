@@ -9,14 +9,10 @@ val circeVersion = "0.14.1"
 lazy val root = (project in file(".")).enablePlugins(GeneratorPlugin)
   .settings(
     name := "td-tl-types",
-    libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.3.3",
-    libraryDependencies += "org.scalameta" %% "scalameta" % "4.7.5",
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core",
       "io.circe" %% "circe-generic",
-      "io.circe" %% "circe-parser",
-      "io.circe" %% "circe-shapes",
-      "io.circe" %% "circe-generic-extras"
+      "io.circe" %% "circe-parser"
     ).map(_ % circeVersion),
     Compile / sourceGenerators += Def.task {
       val tlFile = file(".") / "tl" / "td_api_1_8_10.tl"
