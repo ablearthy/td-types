@@ -1,6 +1,6 @@
 import _root_.io.github.ablearthy.tl.GeneratorPlugin
 
-ThisBuild / version := "0.1.0-SNAPSHOT"
+ThisBuild / version := "1.0.0"
 
 ThisBuild / scalaVersion := "2.13.10"
 
@@ -8,7 +8,7 @@ val circeVersion = "0.14.1"
 
 lazy val root = (project in file(".")).enablePlugins(GeneratorPlugin)
   .settings(
-    name := "td-tl-parser",
+    name := "td-tl-types",
     libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.3.3",
     libraryDependencies += "org.scalameta" %% "scalameta" % "4.7.5",
     libraryDependencies ++= Seq(
