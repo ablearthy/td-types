@@ -5,4 +5,5 @@ package object aliases {
   type Int32 = Int
   type Int53 = Long
   type Int64 = Long
+  type Bytes = String // TODO: add encoder & decoder (base64)
 }
