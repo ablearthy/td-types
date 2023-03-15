@@ -1,1 +1,1 @@
-addSbtPlugin("io.github.ablearthy" % "td-tl-types-generator" % "1.0.0")
+addSbtPlugin("io.github.ablearthy" % "td-tl-types-generator" % "1.0.4")
