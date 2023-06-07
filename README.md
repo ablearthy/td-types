@@ -5,7 +5,3 @@ The library provides `TDLib`
 and
 [classes](https://core.telegram.org/tdlib/docs/classtd_1_1td__api_1_1_object.html).
 Additionally, it provides `circe` encoders and decoders.
-
-
-TODO:
-- decode `Bytes` properly (now it contains base64 string)
