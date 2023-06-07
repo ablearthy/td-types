@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets
 
 object BytesCodecs {
   val bytesDecoder: Decoder[Bytes] = Decoder.decodeString.emapTry { str =>
-    Try(Base64.getDecoder().decode(str)).map(Bytes)
+    Try(Base64.getDecoder().decode(str)).map(Bytes.apply)
   }
 
   val bytesEncoder: Encoder[Bytes] = Encoder.encodeString.contramap[Bytes] { b =>
