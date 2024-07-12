@@ -1,11 +1,10 @@
 import _root_.io.github.ablearthy.tl.GeneratorPlugin
 import scala.math.Ordering.Implicits._
 
-lazy val scala212 = "2.12.17"
-lazy val scala213 = "2.13.10"
+lazy val scala213 = "2.13.14"
 lazy val scala3 = "3.3.3"
 
-lazy val supportedScalaVersions = Seq(scala212, scala213, scala3)
+lazy val supportedScalaVersions = Seq(scala213, scala3)
 
 val circeVersion = "0.14.1"
 
