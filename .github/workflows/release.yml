@@ -14,7 +14,7 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: sbt
-      - run: sbt ci-release
+      - run: sbt ci-release -J-XX:+UseG1GC -J-Xmx8G
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
