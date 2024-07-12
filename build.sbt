@@ -34,6 +34,7 @@ inThisBuild(
 
 ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
+publish / skip := true
 
 lazy val root = (project in file("."))
   .enablePlugins(GeneratorPlugin)
