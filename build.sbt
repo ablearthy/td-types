@@ -3,7 +3,7 @@ import scala.math.Ordering.Implicits._
 
 lazy val scala212 = "2.12.17"
 lazy val scala213 = "2.13.10"
-lazy val scala3 = "3.2.1"
+lazy val scala3 = "3.3.3"
 
 lazy val supportedScalaVersions = Seq(scala212, scala213, scala3)
 
@@ -49,7 +49,7 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-parser"
     ).map(_ % circeVersion),
     Compile / sourceGenerators += Def.task {
-      val tlFile = file(".") / "tl" / "td_api_1_8_10.tl"
+      val tlFile = file(".") / "tl" / "td_api.tl"
       val path = (Compile / sourceManaged).value / "io" / "github" / "ablearthy" / "tl"
       GeneratorPlugin.generateTypes(tlFile, path)
     }.taskValue,
